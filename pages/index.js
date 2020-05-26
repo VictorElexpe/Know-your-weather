@@ -1,61 +1,46 @@
 import Head from 'next/head'
 
-export default function Home() {
+export default function Home({data}) {
   return (
     <div className="container">
       <Head>
-        <title>Create Next App</title>
+        <title>Know your weather</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
         <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          {data.city}'s weather now
         </h1>
 
         <p className="description">
-          Get started by editing <code>pages/index.js</code>
+          {data.description}
         </p>
 
         <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/zeit/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+          <div className="card">
+            <h4>Temperature</h4>
+            <p>{data.temp} ºC</p>
+          </div>
+          <div className="card">
+            <h4>Humidity</h4>
+            <p>{data.humidity} %</p>
+          </div>
+          <div className="card">
+            <h4>Wind</h4>
+            <p>{data.wind} Km/h</p>
+          </div>
         </div>
       </main>
 
       <footer>
+        Made by&nbsp;
         <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          href="https://twitter.com/victorelexpe"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="logo" />
+          @victorelexpe
         </a>
       </footer>
 
@@ -64,6 +49,8 @@ export default function Home() {
           min-height: 100vh;
           padding: 0 0.5rem;
           display: flex;
+          background-color: #000;
+          color: #FFF;
           flex-direction: column;
           justify-content: center;
           align-items: center;
@@ -81,7 +68,6 @@ export default function Home() {
         footer {
           width: 100%;
           height: 100px;
-          border-top: 1px solid #eaeaea;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -115,6 +101,7 @@ export default function Home() {
 
         .title {
           margin: 0;
+          font-weight: 900;
           line-height: 1.15;
           font-size: 4rem;
         }
@@ -127,6 +114,20 @@ export default function Home() {
         .description {
           line-height: 1.5;
           font-size: 1.5rem;
+        }
+
+        input {
+          margin: 1rem;
+          flex-basis: 45%;
+          font-size: 1.5rem;
+          padding: 1rem;
+          text-align: left;
+          background-color: #000;
+          border: 1px solid #eaeaea;
+          color: #FFF;
+          text-decoration: none;
+          border-radius: 10px;
+          transition: color 0.15s ease, border-color 0.15s ease;
         }
 
         code {
@@ -150,12 +151,12 @@ export default function Home() {
 
         .card {
           margin: 1rem;
-          flex-basis: 45%;
+          flex-basis: 50%;
           padding: 1.5rem;
           text-align: left;
-          color: inherit;
-          text-decoration: none;
           border: 1px solid #eaeaea;
+          color: #FFF;
+          text-decoration: none;
           border-radius: 10px;
           transition: color 0.15s ease, border-color 0.15s ease;
         }
@@ -163,23 +164,20 @@ export default function Home() {
         .card:hover,
         .card:focus,
         .card:active {
-          color: #0070f3;
-          border-color: #0070f3;
+          color: #9B9B9B;
+          border-color: #9B9B9B;
         }
 
-        .card h3 {
+        .card h4 {
           margin: 0 0 1rem 0;
-          font-size: 1.5rem;
+          font-size: 1rem;
+          font-weight: normal;
         }
 
         .card p {
           margin: 0;
           font-size: 1.25rem;
           line-height: 1.5;
-        }
-
-        .logo {
-          height: 1em;
         }
 
         @media (max-width: 600px) {
@@ -206,4 +204,28 @@ export default function Home() {
       `}</style>
     </div>
   )
+}
+
+export async function getServerSideProps() {
+  const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=Madrid&units=metric&appid=52116dcd2be64132ede115a603a15c7c`)
+  var data = await res.json()
+console.log(data);
+
+  const city = data.name;
+  const description = data.weather[0].description;
+  const country = data.sys.country;
+  const temp = Math.round(data.main.temp);
+  const humidity = data.main.humidity;
+  const wind = Math.round(data.wind.speed * 3.6);
+
+  data = {
+    "city": city,
+    "description": description,
+    "country": country,
+    "temp": temp,
+    "humidity": humidity,
+    "wind": wind,
+  }
+
+  return { props: { data } }
 }
